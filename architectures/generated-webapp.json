@@ -1,0 +1,69 @@
+{
+  "nodes": [
+    {
+      "unique-id": "web-frontend",
+      "node-type": "webclient",
+      "name": "Web Frontend",
+      "description": "An interesting UI"
+    },
+    {
+      "unique-id": "api-service",
+      "node-type": "service",
+      "name": "API Service",
+      "description": "Super secure backend service",
+      "interfaces": [
+        {
+          "unique-id": "api-https-interface",
+          "host": "api.example.com",
+          "port": 443,
+          "protocol": "HTTPS"
+        }
+      ]
+    },
+    {
+      "unique-id": "app-database",
+      "node-type": "database",
+      "name": "Application Database",
+      "description": "To store all the data",
+      "interfaces": [
+        {
+          "unique-id": "postgres-interface",
+          "host": "db.example.com",
+          "port": 5432,
+          "protocol": "PostgreSQL"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "unique-id": "frontend-to-api",
+      "description": "Web frontend communicates with the API service to fetch and submit data",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "web-frontend"
+          },
+          "destination": {
+            "node": "api-service"
+          }
+        }
+      }
+    },
+    {
+      "unique-id": "api-to-database",
+      "description": "API service connects to the database for persistent data storage and retrieval",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "api-service"
+          },
+          "destination": {
+            "node": "app-database"
+          }
+        }
+      }
+    }
+  ],
+  "$schema": "https://example.com/patterns/web-app-pattern.json"
+}

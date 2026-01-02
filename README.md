@@ -20,6 +20,7 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 14: Asking AI to suggest resiliency improvements, then implementing them
 - [x] Day 15: Storing operational information in calm. Then using AI to debug likely issues
 - [x] Day 16: Generating ops docs
+- [x] Day 17: Introduction to CALM Patterns - and broken AI generated patterns. (see `.json.broken`) files.
 ...
 
 

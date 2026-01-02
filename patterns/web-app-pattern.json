@@ -1,0 +1,112 @@
+{
+    "$id": "https://example.com/patterns/web-app-pattern.json",
+    "$schema": "https://calm.finos.org/release/1.1/meta/calm.json",
+    "title": "Web Application Pattern",
+    "description": "A three-tier web application architecture pattern consisting of a web frontend, API service layer, and database tier",
+    "type": "object",
+    "properties": {
+        "nodes": {
+            "type": "array",
+            "prefixItems": [
+                {
+                    "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node",
+                    "type": "object",
+                    "properties": {
+                        "unique-id": {
+                            "const": "web-frontend"
+                        },
+                        "node-type": {
+                            "const": "webclient"
+                        },
+                        "name": {
+                            "const": "Web Frontend"
+                        }
+                    }
+                },
+                {
+                    "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node",
+                    "type": "object",
+                    "properties": {
+                        "unique-id": {
+                            "const": "api-service"
+                        },
+                        "node-type": {
+                            "const": "service"
+                        },
+                        "name": {
+                            "const": "API Service"
+                        }
+                    }
+                },
+                {
+                    "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node",
+                    "type": "object",
+                    "properties": {
+                        "unique-id": {
+                            "const": "app-database"
+                        },
+                        "node-type": {
+                            "const": "database"
+                        },
+                        "name": {
+                            "const": "Application Database"
+                        }
+                    }
+                }
+            ],
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "relationships": {
+            "type": "array",
+            "prefixItems": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "unique-id": {
+                            "const": "frontend-to-api"
+                        },
+                        "relationship-type": {
+                            "const": {
+                                "connects": {
+                                    "source": {
+                                        "node": "web-frontend"
+                                    },
+                                    "destination": {
+                                        "node": "api-service"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "unique-id": {
+                            "const": "api-to-database"
+                        },
+                        "relationship-type": {
+                            "const": {
+                                "connects": {
+                                    "source": {
+                                        "node": "api-service"
+                                    },
+                                    "destination": {
+                                        "node": "app-database"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+        }
+    },
+    "required": [
+        "nodes",
+        "relationships"
+    ]
+}
