@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/schemas/rest-api-interface.json",
+    "title": "REST API Interface",
+    "description": "JSON Schema defining a standard REST API interface specification",
+    "type": "object",
+    "properties": {
+        "host": {
+            "type": "string",
+            "description": "The hostname or IP address of the REST API server"
+        },
+        "port": {
+            "type": "number",
+            "description": "The port number on which the REST API is accessible",
+            "minimum": 1,
+            "maximum": 65535
+        },
+        "basePath": {
+            "type": "string",
+            "description": "The base path for all API endpoints",
+            "pattern": "^/.*"
+        },
+        "authentication": {
+            "type": "string",
+            "description": "The authentication mechanism required by the API",
+            "enum": ["OAuth2", "API-Key", "None"]
+        },
+        "description": {
+            "type": "string",
+            "description": "Human-readable description of the API interface"
+        },
+        "version": {
+            "type": "string",
+            "description": "API version identifier"
+        }
+    },
+    "required": ["host", "port", "basePath", "authentication"],
+    "additionalProperties": false
+}

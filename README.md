@@ -8,6 +8,7 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 2: Create Your First Node
 - [x] Day 3: Connect Nodes with Relationships
 - [x] Day 4: Install CALM VSCode Extension
+- [x] Day 5: Add Interfaces to Nodes
 ...
 
 
