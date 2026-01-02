@@ -5,11 +5,65 @@
     "description": "API service that aggregates account information and payment initiation capabilities from multiple financial institutions through open banking standards",
     "nodes": [
         {
+            "unique-id": "end-user",
+            "node-type": "actor",
+            "name": "End User",
+            "description": "Customer or application user who accesses their financial account information and initiates payments through the open banking aggregation service"
+        },
+        {
+            "unique-id": "openbanking-system",
+            "node-type": "system",
+            "name": "Open Banking Aggregation System",
+            "description": "Complete system providing open banking aggregation capabilities, including the API service and secure credential storage for multi-bank integration"
+        },
+        {
             "unique-id": "openbanking-api-service",
             "node-type": "service",
             "name": "Open Banking Aggregation Service",
             "description": "RESTful API service that provides unified access to multiple banks' open banking APIs, handling account information requests, payment initiation, and consent management across different financial institutions"
+        },
+        {
+            "unique-id": "credentials-database",
+            "node-type": "database",
+            "name": "Open Banking Credentials Database",
+            "description": "Secure database storing authentication credentials and access tokens for downstream open banking API integrations with multiple financial institutions"
         }
     ],
-    "relationships": []
+    "relationships": [
+        {
+            "unique-id": "user-interacts-with-api",
+            "description": "Requests account information and initiates payments through",
+            "relationship-type": {
+                "interacts": {
+                    "actor": "end-user",
+                    "nodes": ["openbanking-api-service"]
+                }
+            }
+        },
+        {
+            "unique-id": "system-composition",
+            "description": "Open banking system is composed of the API service and credentials database",
+            "relationship-type": {
+                "composed-of": {
+                    "container": "openbanking-system",
+                    "nodes": ["openbanking-api-service", "credentials-database"]
+                }
+            }
+        },
+        {
+            "unique-id": "api-service-to-credentials-db",
+            "description": "Reads and writes authentication credentials from",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "openbanking-api-service"
+                    },
+                    "destination": {
+                        "node": "credentials-database"
+                    }
+                }
+            },
+            "protocol": "JDBC"
+        }
+    ]
 }
