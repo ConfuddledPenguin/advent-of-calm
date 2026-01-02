@@ -13,6 +13,7 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 7: Build Complete E-Commerce Architecture
 - [x] Day 8: Added controls
 - [x] Day 9: Added flows!
+- [x] Day 10: Example ADR's. The examples are nonsense and don't match the arch..
 ...
 
 
