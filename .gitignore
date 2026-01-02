@@ -5,3 +5,4 @@ node_modules/
 **/.docusaurus/
 
 questions.md
+docs/generated/
