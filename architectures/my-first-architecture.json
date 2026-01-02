@@ -3,6 +3,13 @@
     "unique-id": "openbanking-aggregation-api",
     "name": "Open Banking Aggregation API",
     "description": "API service that aggregates account information and payment initiation capabilities from multiple financial institutions through open banking standards",
+    "metadata": {
+        "owner": "Tom Maxwell",
+        "version": "1.0.0",
+        "created": "2026-01-02",
+        "description": "Demonstration architecture showcasing an open banking aggregation system with service, database, and user interactions",
+        "tags": ["learning", "authentication", "demo", "open-banking"]
+    },
     "nodes": [
         {
             "unique-id": "end-user",
@@ -32,7 +39,13 @@
                         "authentication": "OAuth2"
                     }
                 }
-            ]
+            ],
+            "metadata": {
+                "tech-owner": "Open Banking Integration Team",
+                "repository": "https://github.com/example-org/openbanking-api",
+                "deployment-type": "container",
+                "sla-tier": "tier-1"
+            }
         },
         {
             "unique-id": "credentials-database",
@@ -86,7 +99,12 @@
                     }
                 }
             },
-            "protocol": "JDBC"
+            "protocol": "JDBC",
+            "metadata": {
+                "latency-sla": "< 100ms",
+                "monitoring": true,
+                "circuit-breaker": true
+            }
         }
     ]
 }
