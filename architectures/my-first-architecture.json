@@ -1,0 +1,15 @@
+{
+    "$schema": "https://calm.finos.org/release/1.1/meta/calm.json",
+    "unique-id": "openbanking-aggregation-api",
+    "name": "Open Banking Aggregation API",
+    "description": "API service that aggregates account information and payment initiation capabilities from multiple financial institutions through open banking standards",
+    "nodes": [
+        {
+            "unique-id": "openbanking-api-service",
+            "node-type": "service",
+            "name": "Open Banking Aggregation Service",
+            "description": "RESTful API service that provides unified access to multiple banks' open banking APIs, handling account information requests, payment initiation, and consent management across different financial institutions"
+        }
+    ],
+    "relationships": []
+}
