@@ -44,6 +44,90 @@
             ]
         }
     },
+    "flows": [
+        {
+            "unique-id": "order-processing-flow",
+            "name": "Customer Order Processing",
+            "description": "End-to-end flow from customer placing an order to payment confirmation",
+            "transitions": [
+                {
+                    "relationship-unique-id": "customer-interacts-with-gateway",
+                    "sequence-number": 1,
+                    "description": "Customer submits order via web interface",
+                    "direction": "source-to-destination"
+                },
+                {
+                    "relationship-unique-id": "gateway-to-order-service",
+                    "sequence-number": 2,
+                    "description": "API Gateway routes order to Order Service",
+                    "direction": "source-to-destination"
+                },
+                {
+                    "relationship-unique-id": "order-service-to-inventory-service",
+                    "sequence-number": 3,
+                    "description": "Order Service checks inventory availability and reserves stock",
+                    "direction": "source-to-destination"
+                },
+                {
+                    "relationship-unique-id": "order-service-to-payment-service",
+                    "sequence-number": 4,
+                    "description": "Order Service initiates payment processing",
+                    "direction": "source-to-destination"
+                }
+            ],
+            "controls": {
+                "audit": {
+                    "description": "All order processing steps must be logged for audit compliance",
+                    "requirements": [
+                        {
+                            "requirement-url": "https://internal-policy.example.com/audit/transaction-logging",
+                            "config": {
+                                "log-level": "detailed",
+                                "retention-days": 365
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "unique-id": "inventory-check-flow",
+            "name": "Inventory Stock Check",
+            "description": "Admin checks and updates inventory stock levels",
+            "transitions": [
+                {
+                    "relationship-unique-id": "admin-interacts-with-gateway",
+                    "sequence-number": 1,
+                    "description": "Admin requests inventory status",
+                    "direction": "source-to-destination"
+                },
+                {
+                    "relationship-unique-id": "gateway-to-inventory-service",
+                    "sequence-number": 2,
+                    "description": "Route to inventory service",
+                    "direction": "source-to-destination"
+                },
+                {
+                    "relationship-unique-id": "inventory-service-to-inventory-db",
+                    "sequence-number": 3,
+                    "description": "Query current stock levels",
+                    "direction": "source-to-destination"
+                },
+                {
+                    "relationship-unique-id": "inventory-service-to-inventory-db",
+                    "sequence-number": 4,
+                    "description": "Return stock data",
+                    "direction": "destination-to-source"
+                },
+                {
+                    "relationship-unique-id": "gateway-to-inventory-service",
+                    "sequence-number": 5,
+                    "description": "Return inventory report",
+                    "direction": "destination-to-source"
+                }
+            ]
+        }
+    ],
     "nodes": [
         {
             "unique-id": "customer-actor",
