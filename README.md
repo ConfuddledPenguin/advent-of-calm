@@ -18,6 +18,7 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 12: Custom docs? 
 - [x] Day 13: Handlebars...?
 - [x] Day 14: Asking AI to suggest resiliency improvements, then implementing them
+- [x] Day 15: Storing operational information in calm. Then using AI to debug likely issues
 ...
 
 
