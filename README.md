@@ -16,6 +16,8 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 10: Example ADR's. The examples are nonsense and don't match the arch..
 - [x] Day 11: Generated some docs using the CLI
 - [x] Day 12: Custom docs? 
+- [x] Day 13: Handlebars...?
+- [x] Day 14: Asking AI to suggest resiliency improvements, then implementing them
 ...
 
 

@@ -46,6 +46,21 @@
                     "config-url": "https://configs.example.com/infra/ha-config.yaml"
                 }
             ]
+        },
+        "high-availability": {
+            "description": "Platform-wide high availability and resilience requirements",
+            "requirements": [
+                {
+                    "requirement-url": "https://internal-policy.example.com/resilience/high-availability-sla",
+                    "config": {
+                        "uptime-percentage": 99.9,
+                        "max-downtime-minutes-per-month": 43.2,
+                        "redundancy-required": true,
+                        "multi-az-deployment": true,
+                        "automated-failover": true
+                    }
+                }
+            ]
         }
     },
     "flows": [
@@ -152,10 +167,35 @@
             "description": "Complete e-commerce platform containing all microservices for order processing, inventory management, and payment processing"
         },
         {
-            "unique-id": "api-gateway-service",
+            "unique-id": "load-balancer",
             "node-type": "service",
-            "name": "API Gateway",
-            "description": "Entry point for all client requests, handling routing, authentication, and load balancing to backend microservices",
+            "name": "Load Balancer",
+            "description": "Distributes incoming traffic across multiple API Gateway instances for high availability and fault tolerance",
+            "interfaces": [
+                {
+                    "unique-id": "lb-https-endpoint",
+                    "definition-url": "https://my-enterprise/patterns/rest-api-interface.json",
+                    "config": {
+                        "host": "api.ecommerce.example.com",
+                        "port": 443,
+                        "basePath": "/api/v1",
+                        "protocol": "HTTPS"
+                    }
+                }
+            ],
+            "metadata": {
+                "tech-owner": "Platform Engineering Team",
+                "deployment-type": "managed-service",
+                "sla-tier": "tier-1",
+                "high-availability": true,
+                "purpose": "Eliminate single point of failure for API Gateway layer"
+            }
+        },
+        {
+            "unique-id": "api-gateway-1",
+            "node-type": "service",
+            "name": "API Gateway Instance 1",
+            "description": "Primary API Gateway instance handling routing, authentication, and load balancing to backend microservices",
             "interfaces": [
                 {
                     "unique-id": "gateway-https-endpoint",
@@ -172,7 +212,55 @@
                 "tech-owner": "Platform Engineering Team",
                 "repository": "https://github.com/example-org/api-gateway",
                 "deployment-type": "container",
-                "sla-tier": "tier-1"
+                "sla-tier": "tier-1",
+                "instance-group": "api-gateway-cluster",
+                "high-availability": true,
+                "availability-zone": "us-east-1a"
+            },
+            "controls": {
+                "performance": {
+                    "description": "API Gateway rate limiting and caching requirements",
+                    "requirements": [
+                        {
+                            "requirement-url": "https://internal-policy.example.com/performance/rate-limiting",
+                            "config-url": "https://configs.example.com/gateway/rate-limits.yaml"
+                        },
+                        {
+                            "requirement-url": "https://internal-policy.example.com/performance/caching-policy",
+                            "config": {
+                                "default-ttl-seconds": 300,
+                                "cache-control": "private"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "unique-id": "api-gateway-2",
+            "node-type": "service",
+            "name": "API Gateway Instance 2",
+            "description": "Secondary API Gateway instance handling routing, authentication, and load balancing to backend microservices",
+            "interfaces": [
+                {
+                    "unique-id": "gateway-2-https-endpoint",
+                    "definition-url": "https://my-enterprise/patterns/rest-api-interface.json",
+                    "config": {
+                        "host": "api-gateway-2.internal",
+                        "port": 443,
+                        "basePath": "/api/v1",
+                        "authentication": "OAuth2"
+                    }
+                }
+            ],
+            "metadata": {
+                "tech-owner": "Platform Engineering Team",
+                "repository": "https://github.com/example-org/api-gateway",
+                "deployment-type": "container",
+                "sla-tier": "tier-1",
+                "instance-group": "api-gateway-cluster",
+                "high-availability": true,
+                "availability-zone": "us-east-1b"
             },
             "controls": {
                 "performance": {
@@ -215,6 +303,24 @@
                 "repository": "https://github.com/example-org/order-service",
                 "deployment-type": "container",
                 "sla-tier": "tier-1"
+            },
+            "controls": {
+                "circuit-breaker": {
+                    "description": "Circuit breaker pattern for downstream service protection",
+                    "requirements": [
+                        {
+                            "requirement-url": "https://internal-policy.example.com/resilience/circuit-breaker-policy",
+                            "config": {
+                                "failure-threshold-percentage": 50,
+                                "minimum-requests": 20,
+                                "open-state-duration-seconds": 60,
+                                "half-open-max-requests": 3,
+                                "timeout-milliseconds": 5000,
+                                "applies-to": ["inventory-service", "payment-service"]
+                            }
+                        }
+                    ]
+                }
             }
         },
         {
@@ -277,15 +383,40 @@
             }
         },
         {
-            "unique-id": "order-database",
+            "unique-id": "order-database-cluster",
+            "node-type": "system",
+            "name": "Order Database Cluster",
+            "description": "High-availability database cluster for order data with primary-replica replication",
+            "controls": {
+                "failover": {
+                    "description": "Automated failover and disaster recovery requirements",
+                    "requirements": [
+                        {
+                            "requirement-url": "https://internal-policy.example.com/resilience/database-failover-policy",
+                            "config": {
+                                "rto-seconds": 300,
+                                "rpo-seconds": 60,
+                                "automated-failover": true,
+                                "failover-trigger": "primary-health-check-failure",
+                                "promotion-strategy": "replica-to-primary",
+                                "backup-frequency-hours": 24,
+                                "backup-retention-days": 30
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "unique-id": "order-database-primary",
             "node-type": "database",
-            "name": "Order Database",
-            "description": "Persistent storage for order data, order items, customer information, and order history",
+            "name": "Order Database Primary",
+            "description": "Primary database instance for order data, handles all write operations and serves as replication source",
             "interfaces": [
                 {
-                    "unique-id": "order-db-connection",
+                    "unique-id": "order-db-primary-connection",
                     "protocol": "JDBC",
-                    "host": "order-db.internal",
+                    "host": "order-db-primary.internal",
                     "port": 5432,
                     "database": "orders"
                 }
@@ -294,7 +425,36 @@
                 "tech-owner": "Order Management Team",
                 "repository": "https://github.com/example-org/database-schemas",
                 "deployment-type": "managed-service",
-                "sla-tier": "tier-1"
+                "sla-tier": "tier-1",
+                "database-role": "primary",
+                "replication-mode": "async",
+                "availability-zone": "us-east-1a",
+                "operations": "read-write"
+            }
+        },
+        {
+            "unique-id": "order-database-replica",
+            "node-type": "database",
+            "name": "Order Database Replica",
+            "description": "Read replica database instance for order data, handles read operations and provides failover capability",
+            "interfaces": [
+                {
+                    "unique-id": "order-db-replica-connection",
+                    "protocol": "JDBC",
+                    "host": "order-db-replica.internal",
+                    "port": 5432,
+                    "database": "orders"
+                }
+            ],
+            "metadata": {
+                "tech-owner": "Order Management Team",
+                "repository": "https://github.com/example-org/database-schemas",
+                "deployment-type": "managed-service",
+                "sla-tier": "tier-1",
+                "database-role": "replica",
+                "replication-mode": "async",
+                "availability-zone": "us-east-1b",
+                "operations": "read-only"
             }
         },
         {
@@ -317,6 +477,47 @@
                 "deployment-type": "managed-service",
                 "sla-tier": "tier-2"
             }
+        },
+        {
+            "unique-id": "message-broker",
+            "node-type": "system",
+            "name": "Message Broker",
+            "description": "RabbitMQ message broker for asynchronous processing and service decoupling",
+            "interfaces": [
+                {
+                    "unique-id": "amqp-interface",
+                    "protocol": "AMQP",
+                    "host": "rabbitmq.internal",
+                    "port": 5672
+                }
+            ],
+            "metadata": {
+                "tech-owner": "Platform Engineering Team",
+                "deployment-type": "managed-service",
+                "sla-tier": "tier-1",
+                "broker-type": "RabbitMQ",
+                "adr": "docs/adr/0001-use-message-queue-for-async-processing.md"
+            }
+        },
+        {
+            "unique-id": "order-queue",
+            "node-type": "service",
+            "name": "Order Processing Queue",
+            "description": "Message queue for asynchronous order processing events, enables failure isolation between Order and Payment services",
+            "interfaces": [
+                {
+                    "unique-id": "order-queue-interface",
+                    "protocol": "AMQP",
+                    "queue-name": "order.payment.events"
+                }
+            ],
+            "metadata": {
+                "tech-owner": "Order Management Team",
+                "queue-type": "durable",
+                "message-ttl-seconds": 3600,
+                "max-retries": 3,
+                "adr": "docs/adr/0001-use-message-queue-for-async-processing.md"
+            }
         }
     ],
     "relationships": [
@@ -326,7 +527,7 @@
             "relationship-type": {
                 "interacts": {
                     "actor": "customer-actor",
-                    "nodes": ["api-gateway-service"]
+                    "nodes": ["load-balancer"]
                 }
             }
         },
@@ -336,25 +537,91 @@
             "relationship-type": {
                 "interacts": {
                     "actor": "admin-actor",
-                    "nodes": ["api-gateway-service"]
+                    "nodes": ["load-balancer"]
                 }
             }
         },
         {
             "unique-id": "platform-composition",
-            "description": "E-commerce platform is composed of gateway, services, and databases",
+            "description": "E-commerce platform is composed of load balancer, gateway instances, services, and databases",
             "relationship-type": {
                 "composed-of": {
                     "container": "ecommerce-platform-system",
                     "nodes": [
-                        "api-gateway-service",
+                        "load-balancer",
+                        "api-gateway-1",
+                        "api-gateway-2",
                         "order-service",
                         "inventory-service",
                         "payment-service",
-                        "order-database",
+                        "message-broker",
+                        "order-database-cluster",
                         "inventory-database"
                     ]
                 }
+            }
+        },
+        {
+            "unique-id": "order-db-cluster-composition",
+            "description": "Order database cluster composed of primary and replica instances",
+            "relationship-type": {
+                "composed-of": {
+                    "container": "order-database-cluster",
+                    "nodes": [
+                        "order-database-primary",
+                        "order-database-replica"
+                    ]
+                }
+            }
+        },
+        {
+            "unique-id": "order-queue-composition",
+            "description": "Order processing queue is part of the message broker system",
+            "relationship-type": {
+                "composed-of": {
+                    "container": "message-broker",
+                    "nodes": ["order-queue"]
+                }
+            }
+        },
+        {
+            "unique-id": "lb-to-gateway-1",
+            "description": "Routes traffic to primary gateway instance",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "load-balancer",
+                        "interfaces": ["lb-https-endpoint"]
+                    },
+                    "destination": {
+                        "node": "api-gateway-1",
+                        "interfaces": ["gateway-https-endpoint"]
+                    }
+                }
+            },
+            "metadata": {
+                "load-balancing-algorithm": "round-robin",
+                "health-check-enabled": true
+            }
+        },
+        {
+            "unique-id": "lb-to-gateway-2",
+            "description": "Routes traffic to secondary gateway instance",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "load-balancer",
+                        "interfaces": ["lb-https-endpoint"]
+                    },
+                    "destination": {
+                        "node": "api-gateway-2",
+                        "interfaces": ["gateway-2-https-endpoint"]
+                    }
+                }
+            },
+            "metadata": {
+                "load-balancing-algorithm": "round-robin",
+                "health-check-enabled": true
             }
         },
         {
@@ -363,7 +630,7 @@
             "relationship-type": {
                 "connects": {
                     "source": {
-                        "node": "api-gateway-service",
+                        "node": "api-gateway-1",
                         "interfaces": ["gateway-https-endpoint"]
                     },
                     "destination": {
@@ -379,8 +646,40 @@
             "relationship-type": {
                 "connects": {
                     "source": {
-                        "node": "api-gateway-service",
+                        "node": "api-gateway-1",
                         "interfaces": ["gateway-https-endpoint"]
+                    },
+                    "destination": {
+                        "node": "inventory-service",
+                        "interfaces": ["inventory-api-endpoint"]
+                    }
+                }
+            }
+        },
+        {
+            "unique-id": "gateway-2-to-order-service",
+            "description": "Routes order requests to",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "api-gateway-2",
+                        "interfaces": ["gateway-2-https-endpoint"]
+                    },
+                    "destination": {
+                        "node": "order-service",
+                        "interfaces": ["order-api-endpoint"]
+                    }
+                }
+            }
+        },
+        {
+            "unique-id": "gateway-2-to-inventory-service",
+            "description": "Routes inventory requests to",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "api-gateway-2",
+                        "interfaces": ["gateway-2-https-endpoint"]
                     },
                     "destination": {
                         "node": "inventory-service",
@@ -407,23 +706,51 @@
         },
         {
             "unique-id": "order-service-to-payment-service",
-            "description": "Initiates payment processing through",
+            "description": "Publishes payment events to queue for asynchronous processing",
             "relationship-type": {
                 "connects": {
                     "source": {
                         "node": "order-service",
                         "interfaces": ["order-api-endpoint"]
+                    },
+                    "destination": {
+                        "node": "order-queue",
+                        "interfaces": ["order-queue-interface"]
+                    }
+                }
+            },
+            "metadata": {
+                "operation-type": "publish",
+                "message-type": "payment-request",
+                "purpose": "Decouples order service from payment service for failure isolation",
+                "adr": "docs/adr/0001-use-message-queue-for-async-processing.md"
+            }
+        },
+        {
+            "unique-id": "payment-service-to-order-queue",
+            "description": "Consumes payment events from queue for processing",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "order-queue",
+                        "interfaces": ["order-queue-interface"]
                     },
                     "destination": {
                         "node": "payment-service",
                         "interfaces": ["payment-api-endpoint"]
                     }
                 }
+            },
+            "metadata": {
+                "operation-type": "consume",
+                "message-type": "payment-request",
+                "purpose": "Processes payment requests asynchronously, can recover from downtime",
+                "adr": "docs/adr/0001-use-message-queue-for-async-processing.md"
             }
         },
         {
             "unique-id": "order-service-to-order-db",
-            "description": "Persists order data to",
+            "description": "Persists order data to primary database",
             "relationship-type": {
                 "connects": {
                     "source": {
@@ -431,10 +758,56 @@
                         "interfaces": ["order-api-endpoint"]
                     },
                     "destination": {
-                        "node": "order-database",
-                        "interfaces": ["order-db-connection"]
+                        "node": "order-database-primary",
+                        "interfaces": ["order-db-primary-connection"]
                     }
                 }
+            },
+            "metadata": {
+                "operation-type": "write",
+                "purpose": "All write operations (INSERT, UPDATE, DELETE) go to primary"
+            }
+        },
+        {
+            "unique-id": "order-service-to-order-db-replica",
+            "description": "Reads order data from replica database",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "order-service",
+                        "interfaces": ["order-api-endpoint"]
+                    },
+                    "destination": {
+                        "node": "order-database-replica",
+                        "interfaces": ["order-db-replica-connection"]
+                    }
+                }
+            },
+            "metadata": {
+                "operation-type": "read",
+                "purpose": "Read operations (SELECT) can use replica to reduce primary load"
+            }
+        },
+        {
+            "unique-id": "order-db-primary-to-replica-replication",
+            "description": "Asynchronously replicates data to read replica",
+            "relationship-type": {
+                "connects": {
+                    "source": {
+                        "node": "order-database-primary",
+                        "interfaces": ["order-db-primary-connection"]
+                    },
+                    "destination": {
+                        "node": "order-database-replica",
+                        "interfaces": ["order-db-replica-connection"]
+                    }
+                }
+            },
+            "metadata": {
+                "connection-type": "replication",
+                "replication-mode": "async",
+                "replication-lag-target-ms": 1000,
+                "purpose": "Continuous data replication from primary to replica for HA and read scaling"
             }
         },
         {
