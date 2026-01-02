@@ -3,3 +3,5 @@ node_modules/
 *.log
 .vscode/settings.json
 **/.docusaurus/
+
+questions.md
